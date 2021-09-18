@@ -1,10 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pineapple_target/bloc/score_observer.dart';
 import 'package:pineapple_target/scoring.dart';
+import 'bloc/scoreBloc.dart';
+import 'event/score.dart';
 import 'targets.dart';
 import 'game.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 void main() {
+  Bloc.observer = ScoreBlocObserver();
   runApp(MyApp());
 }
 
@@ -12,7 +16,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return BlocProvider<ScoreBloc>(
+        create: (context) => ScoreBloc(List<Score>()),
+      child:MaterialApp(
       title: 'Pineapple Targets',
       //theme: new ThemeData(scaffoldBackgroundColor: const Color(0xFFEFEFEF)),
       theme: ThemeData(
@@ -20,6 +26,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.teal[200],
       ),
       home: MyHomePage(),
+      ),
     );
   }
 }
@@ -37,13 +44,18 @@ class _MyHomePageState extends State<MyHomePage> {
   ScrollController controller = ScrollController();
   bool closeTopContainer = false;
   double topContainer = 0;
-
+  final List<Game> targetData = [
+    Game("Vegas 3", "indoors", "vegas.png"),
+    Game("Lancaster 3", "indoors", "lancaster_vertical_3_spot.png"),
+   Game("WA Recurve", "outdoors", "wa_full.png")
+  ];
   List<Widget> itemsData = [];
 
   void getPostsData() {
     List<dynamic> responseList = TARGET_DATA;
     List<Widget> listItems = [];
     responseList.forEach((post) {
+      //targetData.add(new Game(post["target"],post["format"],post["image"]));
       listItems.add(Container(
           height: 150,
           margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -160,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       //physics: BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         double scale = 1.0;
-                        Game game = new Game("WA Compound", "wa_full.png");
+                       // Game game = new Game("test", "out","wa_full.png");
               /*          onTap: () {
                           Navigator.push(
                             context,
@@ -177,9 +189,17 @@ class _MyHomePageState extends State<MyHomePage> {
                             scale = 1;
                           }
                         }*/
-                        return Opacity(
-                          opacity: scale,
-
+                        return GestureDetector(/*Opacity(
+                          opacity: scale,*/
+                          onTap: (){
+                            //print();
+                            Game game = targetData[index];
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (context) => ScoringScreen(game: game),
+                            ),
+                            );
+                          }
+                        ,
                           child: Transform(
                             transform:  Matrix4.identity()..scale(scale,scale),
                             alignment: Alignment.bottomCenter,
